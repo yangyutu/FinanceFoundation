@@ -1,0 +1,112 @@
+clear all
+close all
+
+%% first study how parameters affects the yield curve
+% k is the speed of mean reversion
+% r_bar is the risk-neutral long run mean of the short rate
+% sigma is the volatility of the short rate
+% Our model is dr(t)=k(r_bar-r(t))dt+sigma*dW, where dW is a Brownian
+% motion.
+% r is the current short rate at time t
+rng(1)
+
+T=0:0.1:30; % tensor
+r0=.02;
+%% short rate dynamics
+% dX_t = k(mu - X_t)dt + sigma dW_t
+k=.1;
+r_bar=.04;
+mu = r_bar;
+sigma=.01;
+
+SDE = hwv(k, mu, sigma,'startstate',r0);  % (Speed, Level, Sigma)
+ntrials  = 10;
+nPeriods = 359;      % # of simulated observations
+dt       = 1 / 12;      % time increment = 1/100 Y
+rng(142857,'twister')
+
+[R,T] = simulate(SDE, nPeriods, 'DeltaTime', dt,'nTrials', ntrials);
+for i=1:10
+    h1=figure(10);
+    hold on;
+    plot(T,R(:,:,i),'linewidth',2);
+end
+%ylim([0.01 0.051]);
+ylabel('r(t)')
+xlabel('time t, Y')
+%legend('\sigma_{normal} = 10','\sigma_{normal} = 20','\sigma_{normal} = 30','location','northeast')
+set(gca,'linewidth',2,'fontsize',15,'fontweight','bold','plotboxaspectratiomode','auto','xminortick','on','yminortick','on','TickLength',[0.04;0.02]);
+pbaspect([1 1 1])
+set(gca,'box','on')
+%legend('\mu = 0.01','\mu = 0.03','\mu = 0.05','location','northwest')
+saveTightFigure(h1,'VasicekModelYieldCurveDynamics_shortrate.pdf')
+
+
+
+
+%% 1Y evoluation
+
+k=.1;
+r_bar=.04;
+sigma=.01;
+
+B=(1-exp(-k.*T))/k;
+A=(r_bar-sigma^2/(2*k^2))*(B-T)-(sigma^2*B.^2)/(4*k);
+
+y0=B*r0./T - A./T;
+h=figure(1)
+hold on
+plot(T,y0,'linewidth',2,'color','black');
+N = 10;
+for i=1:N
+    mean = r0*exp(-k) + r_bar*(1-exp(-k));
+    sig = sigma*sqrt((1-exp(-2*k))/2.0/k);
+    r1 = randn*sig + mean;
+    y1 = B*r1./T - A./T;
+    plot(T,y1,'linewidth',1);
+
+end
+
+
+xlabel('maturity T, year')
+ylabel('yield y')
+ylim([0,0.05])
+set(gca,'linewidth',2,'fontsize',15,'fontweight','bold','plotboxaspectratiomode','auto','xminortick','on','yminortick','on','TickLength',[0.04;0.02]);
+pbaspect([1 1 1])
+set(gca,'box','on')
+%saveTightFigure(h,'exchangeOptionCorrelationPricePlot.pdf')
+saveTightFigure(h2,'CIRModelYieldCurveEvoluation1Y.pdf')
+
+%% 5Y evoluation
+
+k=.1;
+r_bar=.04;
+sigma=.01;
+
+B=(1-exp(-k.*T))/k;
+A=(r_bar-sigma^2/(2*k^2))*(B-T)-(sigma^2*B.^2)/(4*k);
+
+y0=B*r0./T - A./T;
+h=figure(2)
+hold on
+plot(T,y0,'linewidth',2,'color','black');
+N = 10
+for i=1:N
+    mean = r0*exp(-5*k) + r_bar*(1-exp(-k*5));
+    sig = sigma*sqrt((1-exp(-2*k*5))/2.0/k);
+    r1 = randn*sig + mean;
+    y5 = B*r1./T - A./T;
+    plot(T,y5,'linewidth',1);
+
+end
+
+
+xlabel('maturity T, year')
+ylabel('yield y')
+ylim([0,0.05])
+set(gca,'linewidth',2,'fontsize',15,'fontweight','bold','plotboxaspectratiomode','auto','xminortick','on','yminortick','on','TickLength',[0.04;0.02]);
+pbaspect([1 1 1])
+set(gca,'box','on')
+%saveTightFigure(h,'exchangeOptionCorrelationPricePlot.pdf')
+saveTightFigure(h2,'VasicekModelYieldCurveEvoluation1Y.pdf')
+

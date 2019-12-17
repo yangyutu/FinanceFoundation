@@ -1,0 +1,86 @@
+clear all
+close all
+
+%% short rate trajectories
+rng(1)
+%dX_t = speed(level - X_t)dt + sigma X_t^{1/2}dW_t
+r0=0.02;
+k = 0.01;
+mu = 0.03;
+sigma = 0.02;
+SDE = cir(k, mu, sigma,'startstate',r0);  % (Speed, Level, Sigma)
+ntrials  = 10;
+nPeriods = 359;      % # of simulated observations
+dt       = 1 / 12;      % time increment = 1/100 Y
+rng(142857,'twister')
+
+[R,T] = simulate(SDE, nPeriods, 'DeltaTime', dt,'nTrials', ntrials);
+for i=1:10
+    h1=figure(1);
+    hold on;
+    plot(T,R(:,:,i),'linewidth',2);
+end
+%ylim([0.01 0.051]);
+ylabel('r(t)')
+xlabel('time t, Y')
+%legend('\sigma_{normal} = 10','\sigma_{normal} = 20','\sigma_{normal} = 30','location','northeast')
+set(gca,'linewidth',2,'fontsize',15,'fontweight','bold','plotboxaspectratiomode','auto','xminortick','on','yminortick','on','TickLength',[0.04;0.02]);
+pbaspect([1 1 1])
+set(gca,'box','on')
+%legend('\mu = 0.01','\mu = 0.03','\mu = 0.05','location','northwest')
+saveTightFigure(h1,'CIRModelYieldCurveDynamics_shortrate.pdf')
+
+
+
+
+%% 1Y evoluation
+h = sqrt(k^2 + 2*sigma^2);
+A = (2*k*mu/sigma^2).*log((2*h.*exp((k+h).*T/2))./(2*h + (k+h).*(exp(T.*h) - 1)));
+B = 2.*(exp(h.*T) - 1)./(2*h + (k+h).*(exp(T.*h) - 1));
+
+y0=B*r0./T - A./T;
+h2=figure(2);
+hold on
+plot(T,y0,'linewidth',2,'color','black');
+N = 10;
+for i=1:N
+    r1 = R(13,:,i);
+    y1 = B*r1./T - A./T;
+    plot(T,y1,'linewidth',1);
+end
+ylim([0.0 0.03]);
+ylabel('y(t,T)')
+xlabel('maturity T, Y')
+%legend('\sigma_{normal} = 10','\sigma_{normal} = 20','\sigma_{normal} = 30','location','northeast')
+set(gca,'linewidth',2,'fontsize',15,'fontweight','bold','plotboxaspectratiomode','auto','xminortick','on','yminortick','on','TickLength',[0.04;0.02]);
+pbaspect([1 1 1])
+set(gca,'box','on')
+%legend('\mu = 0.01','\mu = 0.03','\mu = 0.05','location','northwest')
+saveTightFigure(h2,'CIRModelYieldCurveEvoluation1Y.pdf')
+
+
+%% 5Y evoluation
+h = sqrt(k^2 + 2*sigma^2);
+A = (2*k*mu/sigma^2).*log((2*h.*exp((k+h).*T/2))./(2*h + (k+h).*(exp(T.*h) - 1)));
+B = 2.*(exp(h.*T) - 1)./(2*h + (k+h).*(exp(T.*h) - 1));
+
+y0=B*r0./T - A./T;
+h2=figure(3);
+hold on
+plot(T,y0,'linewidth',2,'color','black');
+N = 10;
+for i=1:N
+    r5 = R(61,:,i);
+    y5 = B*r5./T - A./T;
+    plot(T,y5,'linewidth',1);
+end
+ylim([0.00 0.03]);
+ylabel('y(t,T)')
+xlabel('maturity T, Y')
+%legend('\sigma_{normal} = 10','\sigma_{normal} = 20','\sigma_{normal} = 30','location','northeast')
+set(gca,'linewidth',2,'fontsize',15,'fontweight','bold','plotboxaspectratiomode','auto','xminortick','on','yminortick','on','TickLength',[0.04;0.02]);
+pbaspect([1 1 1])
+set(gca,'box','on')
+%legend('\mu = 0.01','\mu = 0.03','\mu = 0.05','location','northwest')
+saveTightFigure(h2,'CIRModelYieldCurveEvoluation5Y.pdf')
+

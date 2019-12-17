@@ -1,0 +1,20 @@
+clear all
+close all
+
+%% first study how parameters affects the yield curve
+% k is the speed of mean reversion
+% r_bar is the risk-neutral long run mean of the short rate
+% sigma is the volatility of the short rate
+% Our model is dr(t)=k(r_bar-r(t))dt+sigma*dW, where dW is a Brownian
+% motion.
+% r is the current short rate at time t
+rng(1)
+%dX_t = speed(level - X_t)dt + sig
+SDE = cir(0.2, 0.1, 0.05)  % (Speed, Level, Sigma)
+SDE = gbm(0.06, 0.2);  % (B = Return, Sigma)
+ntrials = 10;
+nPeriods = 99;      % # of simulated observations
+dt       =   1/100;      % time increment = 1/100 Y
+rng(142857,'twister')
+S0=100;
+[S,T] = simulate(SDE, nPeriods, 'DeltaTime', dt,'nTrials', ntrials);
